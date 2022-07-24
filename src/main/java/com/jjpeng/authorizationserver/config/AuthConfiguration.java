@@ -52,8 +52,8 @@ public class AuthConfiguration extends AuthorizationServerConfigurerAdapter {
         clients.inMemory()
                 .withClient("client")
                 .secret("secret")
-                .authorizedGrantTypes("client_credentials")
-                .scopes("info");
+                .authorizedGrantTypes("password", "refresh_token")
+                .scopes("read");
     }
 
 }
