@@ -7,6 +7,7 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 
 /**
  * @author JJPeng
@@ -53,7 +54,20 @@ public class AuthConfiguration extends AuthorizationServerConfigurerAdapter {
                 .withClient("client")
                 .secret("secret")
                 .authorizedGrantTypes("password", "refresh_token")
-                .scopes("read");
+                .scopes("read")
+                .and()
+                //对于授权服务器来说，资源服务器也是一个客户端
+                //不需要配置grant type,使用客户端凭证模式认证
+                //也无需设置范围
+                .withClient("resourceserver")
+                .secret("resourceserversecret");
+
+    }
+
+    @Override
+    public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+        //配置认证后才能访问check token接口
+        security.checkTokenAccess("isAuthenticated()");
     }
 
 }
