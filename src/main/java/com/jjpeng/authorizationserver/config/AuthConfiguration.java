@@ -67,7 +67,7 @@ public class AuthConfiguration extends AuthorizationServerConfigurerAdapter {
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
         //配置认证后才能访问check token接口
-        security.checkTokenAccess("isAuthenticated()");
+        security.checkTokenAccess("permitAll()");
     }
 
 }
