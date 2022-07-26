@@ -1,12 +1,17 @@
 package com.jjpeng.authorizationserver.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 /**
  * @author JJPeng
@@ -17,34 +22,31 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 @EnableAuthorizationServer
 public class AuthConfiguration extends AuthorizationServerConfigurerAdapter {
 
+    @Value("${jwt.key}")
+    private String jwtKey;
+
     @Autowired
     private AuthenticationManager authenticationManager;
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints.authenticationManager(authenticationManager);
+        endpoints.authenticationManager(authenticationManager)
+                .tokenStore(tokenStore())
+                .accessTokenConverter(jwtAccessTokenConverter());
     }
 
+    @Bean
+    public TokenStore tokenStore() {
+        return new JwtTokenStore(
+                jwtAccessTokenConverter());
+    }
 
-    //详细版本的配置，当使用数据库存储client details是应该使用详细的配置
-//    @Override
-//    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-//        InMemoryClientDetailsService inMemoryClientDetailsService = new InMemoryClientDetailsService();
-//
-//        BaseClientDetails clientDetails = new BaseClientDetails();
-//        clientDetails.setClientId("client");
-//        clientDetails.setClientSecret("secret");
-//        clientDetails.setScope(Arrays.asList("read"));
-//        clientDetails.setAuthorizedGrantTypes(Arrays.asList("password"));
-//
-//        HashMap<String, ClientDetails> map = new HashMap<>();
-//        //key:value -> clientId:clientDetails
-//        map.put("client", clientDetails);
-//        inMemoryClientDetailsService.setClientDetailsStore(map);
-//
-//        clients.withClientDetails(inMemoryClientDetailsService);
-//    }
-
+    @Bean
+    public JwtAccessTokenConverter jwtAccessTokenConverter() {
+        JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+        converter.setSigningKey(jwtKey);
+        return converter;
+    }
 
     //简短版本的配置
     @Override
